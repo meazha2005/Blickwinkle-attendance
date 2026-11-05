@@ -258,16 +258,21 @@ export default function StaffDashboardPage() {
       <div className="min-h-screen bg-[#f8fafc] pb-24 max-w-md mx-auto flex flex-col justify-between">
         <div className="p-4 space-y-4">
           {/* Top Brand Header */}
-          <div className="bg-white rounded-2xl p-4 shadow-xs border border-slate-200/80 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/logo.png"
-                alt="Blickwinkle"
-                width={125}
-                height={34}
-                className="h-7 w-auto object-contain"
-                priority
-              />
+          <div className="bg-white rounded-2xl p-3.5 shadow-xs border border-slate-200/80 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="relative w-7 h-7 shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Blickwinkle"
+                  fill
+                  sizes="32px"
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="text-base font-black tracking-tight text-slate-900">
+                BLICKWINKLE
+              </span>
             </div>
             {staff && (
               <div className="flex items-center gap-2.5">

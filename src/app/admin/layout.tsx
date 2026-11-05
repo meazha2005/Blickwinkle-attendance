@@ -79,14 +79,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 Admin Console
               </span>
             </div>
-            <div className="sm:hidden">
-              <Image
-                src="/logo.png"
-                alt="Blickwinkle"
-                width={100}
-                height={26}
-                className="h-5 w-auto object-contain"
-              />
+            <div className="sm:hidden flex items-center gap-2">
+              <div className="relative w-6 h-6 shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Blickwinkle"
+                  fill
+                  sizes="24px"
+                  className="object-contain"
+                />
+              </div>
+              <span className="text-xs font-black tracking-tight text-slate-900">
+                BLICKWINKLE
+              </span>
             </div>
           </div>
 

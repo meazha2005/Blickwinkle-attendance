@@ -62,15 +62,20 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
         {/* Logo and close button for mobile */}
         <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-800">
           <Link href="/admin/dashboard" className="flex items-center gap-2">
-            <div className="bg-white p-2 rounded-xl">
-              <Image
-                src="/logo.png"
-                alt="Blickwinkle"
-                width={120}
-                height={32}
-                className="h-6 w-auto object-contain"
-                priority
-              />
+            <div className="bg-white px-3 py-2 rounded-xl flex items-center gap-2">
+              <div className="relative w-6 h-6 shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Blickwinkle"
+                  fill
+                  sizes="24px"
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="text-sm font-black tracking-tight text-slate-900 pr-1">
+                BLICKWINKLE
+              </span>
             </div>
           </Link>
           {onCloseMobile && (

@@ -49,15 +49,20 @@ export default function AdminLoginPage() {
         <div className="w-full max-w-md bg-slate-800/90 border border-slate-700/80 rounded-3xl p-8 shadow-2xl backdrop-blur-md">
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="bg-white p-3 rounded-2xl mb-4 shadow-sm">
-              <Image
-                src="/logo.png"
-                alt="Blickwinkle"
-                width={160}
-                height={45}
-                className="h-10 w-auto object-contain"
-                priority
-              />
+            <div className="bg-white px-5 py-3 rounded-2xl mb-4 shadow-sm flex items-center gap-3">
+              <div className="relative w-8 h-8 shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Blickwinkle"
+                  fill
+                  sizes="32px"
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="text-xl font-black tracking-tight text-slate-900">
+                BLICKWINKLE
+              </span>
             </div>
             <div className="flex items-center gap-1.5 text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-semibold">
               <Shield className="w-3.5 h-3.5" />

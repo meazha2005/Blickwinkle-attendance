@@ -98,18 +98,25 @@ export default function AttendanceHistoryPage() {
       <div className="min-h-screen bg-slate-100/70 pb-24 max-w-md mx-auto flex flex-col justify-between">
         <div className="p-4 space-y-4">
           {/* Header */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Blickwinkle"
-                width={120}
-                height={32}
-                className="h-7 w-auto object-contain"
-                priority
-              />
+          <div className="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-200/80 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="relative w-7 h-7 shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="Blickwinkle"
+                  fill
+                  sizes="32px"
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="text-base font-black tracking-tight text-slate-900">
+                BLICKWINKLE
+              </span>
             </div>
-            <span className="text-xs font-bold text-slate-800">Attendance History</span>
+            <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full">
+              History
+            </span>
           </div>
 
           {/* Date Filter Card (From Date & To Date) */}

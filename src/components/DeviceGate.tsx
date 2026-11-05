@@ -35,15 +35,20 @@ export default function DeviceGate({ children }: DeviceGateProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-3xl shadow-xl border border-slate-200/80 p-8 text-center">
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/logo.png"
-              alt="Blickwinkle"
-              width={180}
-              height={50}
-              className="h-12 w-auto object-contain"
-              priority
-            />
+          <div className="flex items-center justify-center gap-2.5 mb-6">
+            <div className="relative w-9 h-9 shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Blickwinkle"
+                fill
+                sizes="36px"
+                className="object-contain"
+                priority
+              />
+            </div>
+            <span className="text-xl font-black tracking-tight text-slate-900">
+              BLICKWINKLE
+            </span>
           </div>
 
           <div className="w-20 h-20 bg-amber-50 text-amber-600 rounded-3xl mx-auto flex items-center justify-center mb-6 border border-amber-200">

@@ -60,15 +60,21 @@ export default function StaffLoginPage() {
       <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-between max-w-md mx-auto px-6 py-8">
         {/* Top Header / Branding */}
         <div className="pt-4">
-          <div className="flex justify-center mb-8">
-            <Image
-              src="/logo.png"
-              alt="Blickwinkle"
-              width={160}
-              height={45}
-              className="h-10 w-auto object-contain"
-              priority
-            />
+          {/* Brand Logo & Name */}
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="relative w-10 h-10 shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Blickwinkle"
+                fill
+                sizes="40px"
+                className="object-contain"
+                priority
+              />
+            </div>
+            <span className="text-2xl font-black tracking-tight text-slate-900">
+              BLICKWINKLE
+            </span>
           </div>
 
           {/* Main Login Card */}
