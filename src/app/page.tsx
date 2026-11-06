@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import confetti from "canvas-confetti";
 import {
   MapPin,
   Clock,
@@ -49,7 +48,21 @@ export default function StaffDashboardPage() {
   const [record, setRecord] = useState<AttendanceRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    type: "success" | "error";
+    title?: string;
+    text: string;
+  } | null>(null);
+
+  // Auto-dismiss notification after 5 seconds
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   // Live Clock
   const [currentTime, setCurrentTime] = useState("");
@@ -158,11 +171,12 @@ export default function StaffDashboardPage() {
   };
 
   const handleMarkAttendance = async (action: "check_in" | "check_out") => {
-    setMessage(null);
+    setNotification(null);
 
     if (!cameraRef.current || !cameraRef.current.isCameraActive()) {
-      setMessage({
+      setNotification({
         type: "error",
+        title: "Camera Required",
         text: "Please start the selfie camera before recording attendance.",
       });
       return;
@@ -170,8 +184,9 @@ export default function StaffDashboardPage() {
 
     const selfieBase64 = cameraRef.current.takeSnapshot();
     if (!selfieBase64) {
-      setMessage({
+      setNotification({
         type: "error",
+        title: "Selfie Not Captured",
         text: "Could not capture front camera selfie. Please ensure face is visible.",
       });
       return;
@@ -233,18 +248,26 @@ export default function StaffDashboardPage() {
         throw new Error(data.message || "Failed to record attendance.");
       }
 
-      try {
-        confetti({
-          particleCount: 70,
-          spread: 60,
-          origin: { y: 0.6 },
-        });
-      } catch {}
+      // No celebration popup - clean notification only
+      const isCheckIn = action === "check_in";
+      setNotification({
+        type: "success",
+        title: isCheckIn ? "Checked In Successfully" : "Checked Out Successfully",
+        text: data.message,
+      });
 
-      setMessage({ type: "success", text: data.message });
+      // Stop camera stream to preserve phone battery and privacy
+      if (cameraRef.current?.stopCamera) {
+        cameraRef.current.stopCamera();
+      }
+
       await fetchInitialData();
     } catch (err: any) {
-      setMessage({ type: "error", text: err.message || "An error occurred." });
+      setNotification({
+        type: "error",
+        title: "Attendance Not Recorded",
+        text: err.message || "An error occurred.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -275,18 +298,20 @@ export default function StaffDashboardPage() {
               </span>
             </div>
             {staff && (
-              <div className="flex items-center gap-2.5">
-                <div className="text-right">
-                  <p className="text-xs font-bold text-slate-900 leading-tight">{staff.name}</p>
-                  <p className="text-[10px] uppercase font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full inline-block mt-0.5">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-900 truncate max-w-[120px]">
+                    {staff.name}
+                  </span>
+                  <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full inline-flex items-center leading-none">
                     {staff.role}
-                  </p>
+                  </span>
                 </div>
                 <button
                   type="button"
                   onClick={handleLogout}
                   title="Logout"
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -294,21 +319,48 @@ export default function StaffDashboardPage() {
             )}
           </div>
 
-          {/* Alert notification message */}
-          {message && (
-            <div
-              className={`p-3.5 rounded-2xl text-xs font-semibold flex items-start gap-2.5 shadow-xs animate-in fade-in ${
-                message.type === "success"
-                  ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
-                  : "bg-rose-50 border border-rose-200 text-rose-800"
-              }`}
-            >
-              {message.type === "success" ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-              )}
-              <span className="flex-1 leading-relaxed">{message.text}</span>
+          {/* Clean Notification Toast (No celebration popup) */}
+          {notification && (
+            <div className="fixed top-4 left-4 right-4 z-50 max-w-sm mx-auto animate-in slide-in-from-top-3 fade-in duration-200">
+              <div
+                className={`p-3.5 rounded-2xl shadow-xl border flex items-start gap-3 bg-white/95 backdrop-blur-md ${
+                  notification.type === "success"
+                    ? "border-emerald-300 text-slate-800 shadow-emerald-600/10"
+                    : "border-rose-300 text-slate-800 shadow-rose-600/10"
+                }`}
+              >
+                <div
+                  className={`p-1.5 rounded-xl shrink-0 mt-0.5 ${
+                    notification.type === "success"
+                      ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
+                      : "bg-rose-50 text-rose-600 border border-rose-200"
+                  }`}
+                >
+                  {notification.type === "success" ? (
+                    <CheckCircle2 className="w-4 h-4" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 pr-1">
+                  {notification.title && (
+                    <p className="text-xs font-bold text-slate-900 leading-tight">
+                      {notification.title}
+                    </p>
+                  )}
+                  <p className="text-[11px] font-medium text-slate-600 mt-0.5 leading-snug">
+                    {notification.text}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNotification(null)}
+                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg shrink-0 -mr-1 -mt-1"
+                  aria-label="Dismiss notification"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -381,7 +433,6 @@ export default function StaffDashboardPage() {
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
                       Check In
                     </>
                   )}
@@ -397,7 +448,6 @@ export default function StaffDashboardPage() {
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
-                      <Clock className="w-4 h-4" />
                       Check Out
                     </>
                   )}
@@ -438,8 +488,10 @@ export default function StaffDashboardPage() {
                             alt="Check-in selfie"
                             className="w-12 h-12 rounded-xl object-cover border border-slate-200"
                             onError={(e) => {
-                              // Fallback if broken
-                              (e.target as HTMLElement).style.display = "none";
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src = "/logo.png";
+                              target.className = "w-12 h-12 rounded-xl object-contain p-1 border border-slate-200 bg-white";
                             }}
                           />
                         </div>
@@ -490,7 +542,10 @@ export default function StaffDashboardPage() {
                             alt="Check-out selfie"
                             className="w-12 h-12 rounded-xl object-cover border border-slate-200"
                             onError={(e) => {
-                              (e.target as HTMLElement).style.display = "none";
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null;
+                              target.src = "/logo.png";
+                              target.className = "w-12 h-12 rounded-xl object-contain p-1 border border-slate-200 bg-white";
                             }}
                           />
                         </div>

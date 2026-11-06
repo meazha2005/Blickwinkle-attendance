@@ -210,7 +210,7 @@ export default function AdminDashboardPage() {
               Staff & Intern Management
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              View, add, update phone/aadhaar details, or remove staff members.
+              View, add, update shift timings, phone/aadhaar details, or manage staff members.
             </p>
           </div>
           <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition" />
@@ -225,10 +225,10 @@ export default function AdminDashboardPage() {
               <Settings className="w-5 h-5" />
             </div>
             <h3 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition">
-              Office Hours & Geofence
+              Office & Geofence Settings
             </h3>
             <p className="text-xs text-slate-500 mt-1">
-              Configure work start/end times, late grace period, and geofence coordinates.
+              Configure organization details, GPS geofence radius, and admin security.
             </p>
           </div>
           <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition" />

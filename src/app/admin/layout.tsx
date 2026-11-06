@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-slate-100/90 flex flex-col lg:flex-row">
-      {/* Desktop Sidebar */}
+      {/* Desktop Light Theme Sidebar */}
       <div className="hidden lg:block fixed inset-y-0 left-0 w-64 z-30">
         <AdminSidebar />
       </div>
@@ -51,7 +51,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs"
             onClick={() => setMobileMenuOpen(false)}
           />
           <div className="relative z-10 w-64 h-full">
@@ -62,23 +62,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content Area */}
       <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
-        {/* Top Header */}
-        <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-xs">
+        {/* Top Header (Clean White Background) */}
+        <header className="sticky top-0 z-20 bg-white border-b border-slate-200/90 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100"
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition"
+              aria-label="Toggle navigation menu"
             >
               <Menu className="w-5 h-5" />
             </button>
+
+            {/* Desktop title */}
             <div className="hidden sm:flex items-center gap-2">
               <span className="text-xs font-bold text-slate-800 tracking-wide uppercase">
                 Blickwinkle Attendance System
               </span>
-              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200/70 px-2.5 py-0.5 rounded-full">
                 Admin Console
               </span>
             </div>
+
+            {/* Mobile Header Logo & Brand */}
             <div className="sm:hidden flex items-center gap-2">
               <div className="relative w-6 h-6 shrink-0">
                 <Image
@@ -87,6 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   fill
                   sizes="24px"
                   className="object-contain"
+                  priority
                 />
               </div>
               <span className="text-xs font-black tracking-tight text-slate-900">
@@ -96,7 +102,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
               <span className="text-xs font-bold text-slate-800">{adminName}</span>
             </div>

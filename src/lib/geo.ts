@@ -19,27 +19,79 @@ export function calculateDistanceMeters(
 }
 
 export async function reverseGeocode(lat: number, lon: number): Promise<string> {
+  // Tier 1: OpenStreetMap Nominatim
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
     const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "BlickwinkleAttendanceApp/1.0 (info@blickwinkle.com)",
+        "User-Agent": "BlickwinkleAttendanceApp/2.0 (contact@blickwinkle.com)",
+        "Accept-Language": "en",
       },
     });
     clearTimeout(timeout);
 
     if (res.ok) {
       const data = await res.json();
-      if (data && data.display_name) {
+      if (data && data.display_name && typeof data.display_name === "string") {
         return data.display_name;
       }
     }
   } catch {
-    // Ignore error and fall through to coordinates string
+    // Continue to Tier 2
   }
-  return `Location: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+
+  // Tier 2: BigDataCloud Reverse Geocode API (fast, reliable, specifically for client coordinates)
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      const parts: string[] = [];
+      if (data.locality) parts.push(data.locality);
+      if (data.city && data.city !== data.locality) parts.push(data.city);
+      if (data.principalSubdivision) parts.push(data.principalSubdivision);
+      if (data.postcode) parts.push(data.postcode);
+      if (data.countryName) parts.push(data.countryName);
+
+      if (parts.length > 0) {
+        return parts.join(", ");
+      }
+    }
+  } catch {
+    // Continue to Tier 3
+  }
+
+  // Tier 3: Photon Komoot OSM Reverse Geocode API
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const url = `https://photon.komoot.io/reverse?lat=${lat}&lon=${lon}`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const data = await res.json();
+      const feat = data?.features?.[0]?.properties;
+      if (feat) {
+        const parts = [feat.name, feat.street, feat.district, feat.city, feat.state, feat.country].filter(Boolean);
+        if (parts.length > 0) {
+          return parts.join(", ");
+        }
+      }
+    }
+  } catch {
+    // Fallback
+  }
+
+  return `Coordinates: ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
 }

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react";
-import { Camera, CameraOff, AlertCircle, RefreshCw, Check } from "lucide-react";
+import { Camera, CameraOff, AlertCircle, RefreshCw } from "lucide-react";
 
 export interface SelfieCameraRef {
   takeSnapshot: () => string | null;
   isCameraActive: () => boolean;
+  stopCamera?: () => void;
 }
 
 interface SelfieCameraProps {
@@ -18,16 +19,50 @@ const SelfieCamera = forwardRef<SelfieCameraRef, SelfieCameraProps>(
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const isMountedRef = useRef(true);
 
     const [isStreaming, setIsStreaming] = useState(false);
     const [cameraError, setCameraError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
+    const stopCamera = () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          try {
+            track.stop();
+          } catch {}
+        });
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        try {
+          videoRef.current.pause();
+        } catch {}
+        videoRef.current.srcObject = null;
+      }
+      if (isMountedRef.current) {
+        setIsStreaming(false);
+        onCameraReady?.(false);
+      }
+    };
+
     // Strictly front/selfie camera only
     const startCamera = async () => {
+      if (!isMountedRef.current) return;
       setIsLoading(true);
       setCameraError(null);
-      stopCamera();
+
+      // Clean up previous stream safely
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        try {
+          videoRef.current.pause();
+        } catch {}
+        videoRef.current.srcObject = null;
+      }
 
       try {
         let stream: MediaStream | null = null;
@@ -43,7 +78,7 @@ const SelfieCamera = forwardRef<SelfieCameraRef, SelfieCameraProps>(
             audio: false,
           });
         } catch {
-          // Fallback to general user facingMode
+          // Fallback to relaxed user facingMode
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: "user",
@@ -54,16 +89,40 @@ const SelfieCamera = forwardRef<SelfieCameraRef, SelfieCameraProps>(
           });
         }
 
-        if (videoRef.current && stream) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.setAttribute("playsinline", "true");
-          videoRef.current.muted = true;
-          await videoRef.current.play();
-          streamRef.current = stream;
-          setIsStreaming(true);
-          onCameraReady?.(true);
+        // If unmounted while waiting for camera access
+        if (!isMountedRef.current) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          const video = videoRef.current;
+          video.srcObject = stream;
+          video.setAttribute("playsinline", "true");
+          video.muted = true;
+
+          // Safe play invocation preventing Chrome AbortError race conditions
+          try {
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              await playPromise;
+            }
+          } catch (playErr: any) {
+            // Ignore benign AbortError triggered by browser play-request interruptions
+            if (playErr.name !== "AbortError" && playErr.name !== "NotAllowedError") {
+              console.warn("Video play error:", playErr);
+            }
+          }
+
+          if (isMountedRef.current) {
+            setIsStreaming(true);
+            onCameraReady?.(true);
+          }
         }
       } catch (err: any) {
+        if (!isMountedRef.current) return;
         console.error("Camera access error:", err);
         let msg = "Front camera permission required.";
         if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
@@ -76,25 +135,18 @@ const SelfieCamera = forwardRef<SelfieCameraRef, SelfieCameraProps>(
         onError?.(msg);
         onCameraReady?.(false);
       } finally {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
-    };
-
-    const stopCamera = () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-      }
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-      setIsStreaming(false);
-      onCameraReady?.(false);
     };
 
     useEffect(() => {
+      isMountedRef.current = true;
       startCamera();
+
       return () => {
+        isMountedRef.current = false;
         stopCamera();
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,7 +168,7 @@ const SelfieCamera = forwardRef<SelfieCameraRef, SelfieCameraProps>(
         const ctx = canvas.getContext("2d");
         if (!ctx) return null;
 
-        // Draw image directly (no mirroring in saved file for accurate selfie photo)
+        // Draw image directly
         ctx.save();
         ctx.drawImage(video, 0, 0, width, height);
         ctx.restore();
@@ -124,6 +176,7 @@ const SelfieCamera = forwardRef<SelfieCameraRef, SelfieCameraProps>(
         return canvas.toDataURL("image/jpeg", 0.88);
       },
       isCameraActive: () => isStreaming,
+      stopCamera: () => stopCamera(),
     }));
 
     return (
@@ -132,11 +185,11 @@ const SelfieCamera = forwardRef<SelfieCameraRef, SelfieCameraProps>(
 
         {/* Camera Container */}
         <div className="relative w-full aspect-[4/4] rounded-2xl overflow-hidden bg-slate-900 border border-slate-200/90 shadow-sm">
+          {/* Note: omitted autoPlay attribute to avoid Chrome/Safari dual-play AbortError */}
           <video
             ref={videoRef}
             playsInline
             muted
-            autoPlay
             className={`w-full h-full object-cover scale-x-[-1] transition-opacity duration-300 ${
               isStreaming ? "opacity-100" : "opacity-0"
             }`}
@@ -196,7 +249,7 @@ const SelfieCamera = forwardRef<SelfieCameraRef, SelfieCameraProps>(
           )}
         </div>
 
-        {/* Toggle Button (Matches user screenshot: "Stop Camera" / "Start Camera") */}
+        {/* Toggle Button */}
         <div className="w-full mt-3">
           {isStreaming ? (
             <button

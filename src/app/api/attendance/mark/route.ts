@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const todayStr = istNow.toISOString().split("T")[0];
     const timeStr = istNow.toISOString().split("T")[1].substring(0, 8); // "HH:mm:ss"
 
-    // Fetch office settings
+    // Fetch office settings (for geofence only)
     const settingsRows = await query<any>(
       `SELECT setting_key, setting_value FROM blickwinkle_attendance_settings`
     );
@@ -62,8 +62,6 @@ export async function POST(req: NextRequest) {
       settings[r.setting_key] = r.setting_value;
     });
 
-    const officeStart = settings.work_start_time || "09:30";
-    const graceMins = parseInt(settings.grace_period_mins || "30", 10);
     const strictGeofence = settings.strict_geofence === "1";
     const officeLat = parseFloat(settings.office_latitude || "13.0827");
     const officeLon = parseFloat(settings.office_longitude || "80.2707");
@@ -89,6 +87,23 @@ export async function POST(req: NextRequest) {
       [session.staffId, todayStr]
     );
 
+    // Fetch staff member's specific attendance timing parameters
+    const staffMember = await queryOne<any>(
+      `SELECT timing_type, work_start_time, work_end_time, late_grace_period_minutes 
+       FROM blickwinkle_attendance_staffs 
+       WHERE id = ?`,
+      [session.staffId]
+    );
+
+    const timingType = staffMember?.timing_type || "fixed";
+    const staffStart = staffMember?.work_start_time
+      ? String(staffMember.work_start_time).substring(0, 5)
+      : "09:30";
+    const graceMins =
+      staffMember?.late_grace_period_minutes !== undefined && staffMember?.late_grace_period_minutes !== null
+        ? Number(staffMember.late_grace_period_minutes)
+        : 30;
+
     // Upload selfie image
     const uploadRes = await uploadSelfieImage(selfie, session.staffId, action);
     if (!uploadRes.success || !uploadRes.url) {
@@ -113,13 +128,19 @@ export async function POST(req: NextRequest) {
       }
 
       // Calculate if Late:
-      // compare timeStr (HH:mm:ss) with officeStart + graceMins
-      const [startH, startM] = officeStart.split(":").map(Number);
-      const graceThresholdMinutes = startH * 60 + startM + graceMins;
-      const [currH, currM] = timeStr.split(":").map(Number);
-      const currMinutes = currH * 60 + currM;
+      let status = "present";
+      if (timingType === "any_time") {
+        // Any Time: No late mark ever. Check in anytime!
+        status = "present";
+      } else {
+        // Fixed Timing: compare timeStr (HH:mm:ss) with staffStart + graceMins
+        const [startH, startM] = staffStart.split(":").map(Number);
+        const graceThresholdMinutes = (startH || 9) * 60 + (startM || 30) + graceMins;
+        const [currH, currM] = timeStr.split(":").map(Number);
+        const currMinutes = currH * 60 + currM;
 
-      const status = currMinutes > graceThresholdMinutes ? "late" : "present";
+        status = currMinutes > graceThresholdMinutes ? "late" : "present";
+      }
 
       await execute(
         `INSERT INTO blickwinkle_attendance_records 
@@ -181,7 +202,7 @@ export async function POST(req: NextRequest) {
       const diffMinutes = Math.max(0, Math.floor((outTotalSeconds - inTotalSeconds) / 60));
 
       let newStatus = existing.status;
-      if (diffMinutes < 240 && newStatus === "present") {
+      if (timingType !== "any_time" && diffMinutes < 240 && newStatus === "present") {
         newStatus = "half_day";
       }
 

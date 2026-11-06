@@ -57,39 +57,38 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
   };
 
   return (
-    <aside className="h-full flex flex-col justify-between bg-slate-900 text-white w-64 border-r border-slate-800 p-4">
+    <aside className="h-full flex flex-col justify-between bg-white text-slate-800 w-64 border-r border-slate-200/90 p-4 shadow-[1px_0_4px_rgba(0,0,0,0.02)]">
       <div>
-        {/* Logo and close button for mobile */}
-        <div className="flex items-center justify-between pb-6 mb-6 border-b border-slate-800">
-          <Link href="/admin/dashboard" className="flex items-center gap-2">
-            <div className="bg-white px-3 py-2 rounded-xl flex items-center gap-2">
-              <div className="relative w-6 h-6 shrink-0">
-                <Image
-                  src="/logo.png"
-                  alt="Blickwinkle"
-                  fill
-                  sizes="24px"
-                  className="object-contain"
-                  priority
-                />
-              </div>
-              <span className="text-sm font-black tracking-tight text-slate-900 pr-1">
-                BLICKWINKLE
-              </span>
+        {/* Brand Logo & Name Header */}
+        <div className="flex items-center justify-between pb-5 mb-5 border-b border-slate-100">
+          <Link href="/admin/dashboard" className="flex items-center gap-2.5">
+            <div className="relative w-8 h-8 shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Blickwinkle"
+                fill
+                sizes="32px"
+                className="object-contain"
+                priority
+              />
             </div>
+            <span className="text-base font-black tracking-tight text-slate-900">
+              BLICKWINKLE
+            </span>
           </Link>
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+              className="lg:hidden p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition"
+              aria-label="Close navigation"
             >
               <X className="w-5 h-5" />
             </button>
           )}
         </div>
 
-        {/* Navigation links */}
-        <nav className="space-y-1.5">
+        {/* Navigation links (Light Theme) */}
+        <nav className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -98,13 +97,15 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
                 key={item.href}
                 href={item.href}
                 onClick={onCloseMobile}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/80"
+                    ? "bg-[#0071BC] text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-400"}`} />
+                <Icon
+                  className={`w-4 h-4 ${isActive ? "text-white stroke-[2.5]" : "text-slate-500"}`}
+                />
                 <span>{item.name}</span>
               </Link>
             );
@@ -113,17 +114,17 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
       </div>
 
       {/* Bottom Profile / Logout and Powered by ZTOI TECH */}
-      <div className="pt-4 border-t border-slate-800 space-y-3">
+      <div className="pt-4 border-t border-slate-100 space-y-3">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition"
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>
         </button>
 
         <div className="pt-2 text-center">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
             Powered by ZTOI TECH
           </p>
         </div>

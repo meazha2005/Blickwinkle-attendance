@@ -76,21 +76,7 @@ export default function DeviceGate({ children }: DeviceGateProps) {
               <span>Desktop access for staff attendance is disabled for integrity.</span>
             </div>
           </div>
-
-          <div className="space-y-3">
-            <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-xs text-blue-700 font-medium">
-              📱 Open <span className="font-bold underline">attendance.blickwinkle.com</span> in Chrome or Safari on your phone.
-            </div>
-
-            <Link
-              href="/admin/login"
-              className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
-            >
-              <ShieldAlert className="w-4 h-4" />
-              Are you an Admin? Open Admin Portal
-            </Link>
-          </div>
-
+          
           <div className="mt-8 pt-4 border-t border-slate-100 text-center">
             <span className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">
               Powered by ZTOI TECH

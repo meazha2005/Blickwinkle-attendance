@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminFromCookies } from "@/lib/auth";
-import { query } from "@/lib/db";
+import { query, execute } from "@/lib/db";
+import { reverseGeocode } from "@/lib/geo";
 
 export async function GET(req: NextRequest) {
   try {
@@ -63,6 +64,43 @@ export async function GET(req: NextRequest) {
     sql += ` ORDER BY r.date DESC, r.check_in_time DESC`;
 
     const records = await query<any>(sql, params);
+
+    // Ensure all records have place names instead of raw coordinates placeholders
+    for (const r of records) {
+      if (
+        r.check_in_latitude &&
+        r.check_in_longitude &&
+        (!r.check_in_address ||
+          r.check_in_address.startsWith("Location:") ||
+          r.check_in_address.startsWith("Coordinates:"))
+      ) {
+        const place = await reverseGeocode(Number(r.check_in_latitude), Number(r.check_in_longitude));
+        if (place && !place.startsWith("Coordinates:") && !place.startsWith("Location:")) {
+          r.check_in_address = place;
+          execute(
+            `UPDATE blickwinkle_attendance_records SET check_in_address = ? WHERE id = ?`,
+            [place, r.id]
+          ).catch(() => {});
+        }
+      }
+
+      if (
+        r.check_out_latitude &&
+        r.check_out_longitude &&
+        (!r.check_out_address ||
+          r.check_out_address.startsWith("Location:") ||
+          r.check_out_address.startsWith("Coordinates:"))
+      ) {
+        const place = await reverseGeocode(Number(r.check_out_latitude), Number(r.check_out_longitude));
+        if (place && !place.startsWith("Coordinates:") && !place.startsWith("Location:")) {
+          r.check_out_address = place;
+          execute(
+            `UPDATE blickwinkle_attendance_records SET check_out_address = ? WHERE id = ?`,
+            [place, r.id]
+          ).catch(() => {});
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, count: records.length, records });
   } catch (err: any) {

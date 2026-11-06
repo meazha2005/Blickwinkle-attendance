@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
+import { ArrowRight, ShieldCheck, AlertCircle, Lock, Eye, EyeOff } from "lucide-react";
 import DeviceGate from "@/components/DeviceGate";
 
 export default function StaffLoginPage() {
   const router = useRouter();
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,23 +35,28 @@ export default function StaffLoginPage() {
       return;
     }
 
+    if (!password) {
+      setError("Please enter your password.");
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/auth/staff-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, password }),
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.message || "Invalid phone number. Contact administrator.");
+        throw new Error(data.message || "Invalid phone number or password.");
       }
 
       router.push("/");
       router.refresh();
     } catch (err: any) {
-      setError(err.message || "Login failed. Please check your number.");
+      setError(err.message || "Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -84,7 +91,7 @@ export default function StaffLoginPage() {
                 Staff & Intern Portal
               </h1>
               <p className="text-xs text-slate-500 mt-1">
-                Enter your registered mobile number to mark attendance.
+                Enter your registered mobile number and password to mark attendance.
               </p>
             </div>
 
@@ -118,9 +125,40 @@ export default function StaffLoginPage() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider text-[11px]">
+                  Password
+                </label>
+                <div className="relative flex items-center">
+                  <div className="absolute left-3.5 flex items-center text-slate-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) setError(null);
+                    }}
+                    className="w-full pl-10 pr-11 py-3 bg-slate-50/70 border border-slate-300 rounded-2xl text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 p-1 text-slate-400 hover:text-slate-600 focus:outline-none"
+                    tabIndex={-1}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
               <button
                 type="submit"
-                disabled={loading || phone.length !== 10}
+                disabled={loading || phone.length !== 10 || !password}
                 className="w-full py-3.5 px-4 rounded-2xl text-xs font-bold text-white bg-[#0071BC] hover:bg-[#005c99] active:scale-[0.99] disabled:opacity-40 disabled:pointer-events-none transition shadow-sm flex items-center justify-center gap-2 mt-2"
               >
                 {loading ? (

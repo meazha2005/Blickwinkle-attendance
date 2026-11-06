@@ -16,6 +16,7 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  Clock,
 } from "lucide-react";
 
 interface Staff {
@@ -25,6 +26,10 @@ interface Staff {
   address: string | null;
   aadhar_no: string | null;
   role: "staff" | "intern";
+  timing_type?: "fixed" | "any_time";
+  work_start_time?: string | null;
+  work_end_time?: string | null;
+  late_grace_period_minutes?: number;
   status: "active" | "inactive";
   created_at: string;
 }
@@ -45,9 +50,14 @@ export default function AdminStaffPage() {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    password: "",
     address: "",
     aadhar_no: "",
     role: "staff",
+    timing_type: "fixed" as "fixed" | "any_time",
+    work_start_time: "09:30",
+    work_end_time: "18:30",
+    late_grace_period_minutes: 30,
     status: "active",
   });
   const [formError, setFormError] = useState<string | null>(null);
@@ -88,9 +98,14 @@ export default function AdminStaffPage() {
     setFormData({
       name: "",
       phone: "",
+      password: "",
       address: "",
       aadhar_no: "",
       role: "staff",
+      timing_type: "fixed",
+      work_start_time: "09:30",
+      work_end_time: "18:30",
+      late_grace_period_minutes: 30,
       status: "active",
     });
     setFormError(null);
@@ -102,9 +117,17 @@ export default function AdminStaffPage() {
     setFormData({
       name: s.name,
       phone: s.phone,
+      password: "",
       address: s.address || "",
       aadhar_no: s.aadhar_no || "",
       role: s.role,
+      timing_type: s.timing_type || "fixed",
+      work_start_time: s.work_start_time ? s.work_start_time.substring(0, 5) : "09:30",
+      work_end_time: s.work_end_time ? s.work_end_time.substring(0, 5) : "18:30",
+      late_grace_period_minutes:
+        s.late_grace_period_minutes !== undefined && s.late_grace_period_minutes !== null
+          ? s.late_grace_period_minutes
+          : 30,
       status: s.status,
     });
     setFormError(null);
@@ -122,6 +145,16 @@ export default function AdminStaffPage() {
     const cleanPhone = formData.phone.replace(/\D/g, "");
     if (cleanPhone.length !== 10) {
       setFormError("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    if (!editingStaff && (!formData.password || formData.password.trim().length < 4)) {
+      setFormError("Password is required for login (minimum 4 characters).");
+      return;
+    }
+
+    if (editingStaff && formData.password && formData.password.trim().length < 4) {
+      setFormError("New password must be at least 4 characters long.");
       return;
     }
 
@@ -270,6 +303,7 @@ export default function AdminStaffPage() {
                   <th className="px-5 py-3">Name</th>
                   <th className="px-5 py-3">Phone</th>
                   <th className="px-5 py-3">Role</th>
+                  <th className="px-5 py-3">Timing</th>
                   <th className="px-5 py-3">Aadhaar No</th>
                   <th className="px-5 py-3">Address</th>
                   <th className="px-5 py-3">Status</th>
@@ -296,6 +330,24 @@ export default function AdminStaffPage() {
                       >
                         {s.role}
                       </span>
+                    </td>
+                    <td className="px-5 py-3">
+                      {s.timing_type === "any_time" ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 inline-block">
+                          Any Time (Flexible)
+                        </span>
+                      ) : (
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-slate-800 flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-blue-600" />
+                            {(s.work_start_time || "09:30").substring(0, 5)} -{" "}
+                            {(s.work_end_time || "18:30").substring(0, 5)}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            +{s.late_grace_period_minutes !== undefined ? s.late_grace_period_minutes : 30}m grace
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-5 py-3 font-mono text-slate-600">
                       {s.aadhar_no || "--"}
@@ -420,6 +472,35 @@ export default function AdminStaffPage() {
                 </p>
               </div>
 
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Login Password{" "}
+                  {editingStaff ? (
+                    <span className="text-slate-400 font-normal text-[11px]">
+                      (leave blank to keep current)
+                    </span>
+                  ) : (
+                    <span className="text-rose-500">*</span>
+                  )}
+                </label>
+                <input
+                  type="password"
+                  placeholder={
+                    editingStaff
+                      ? "Enter new password to update"
+                      : "Set login password (min 4 characters)"
+                  }
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                  required={!editingStaff}
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Staff will use this password along with their mobile number to log in.
+                </p>
+              </div>
+
               {/* Aadhaar Number (up to 16 digits) */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -478,6 +559,125 @@ export default function AdminStaffPage() {
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Office Attendance Parameters (Per-Staff Timing) */}
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/90 space-y-3.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs font-bold text-slate-900">
+                      Office Attendance Parameters
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-semibold text-slate-500">
+                    Individual Staff Timing
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
+                    Timing Mode <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, timing_type: "any_time" })}
+                      className={`p-3 rounded-xl border text-left transition ${
+                        formData.timing_type === "any_time"
+                          ? "bg-white border-blue-600 ring-2 ring-blue-600/20 shadow-xs"
+                          : "bg-white/60 border-slate-200 hover:bg-white"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-900">Any Time</span>
+                        {formData.timing_type === "any_time" && (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-500 leading-snug block">
+                        No late marking or fixed hours. Check in & out anytime.
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, timing_type: "fixed" })}
+                      className={`p-3 rounded-xl border text-left transition ${
+                        formData.timing_type === "fixed"
+                          ? "bg-white border-blue-600 ring-2 ring-blue-600/20 shadow-xs"
+                          : "bg-white/60 border-slate-200 hover:bg-white"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-slate-900">Fixed Timing</span>
+                        {formData.timing_type === "fixed" && (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-500 leading-snug block">
+                        Set fixed office shift hours with late grace threshold.
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {formData.timing_type === "fixed" && (
+                  <div className="pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        Work Start Time
+                      </label>
+                      <input
+                        type="time"
+                        value={formData.work_start_time}
+                        onChange={(e) =>
+                          setFormData({ ...formData, work_start_time: e.target.value })
+                        }
+                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        required={formData.timing_type === "fixed"}
+                      />
+                      <p className="text-[9px] text-slate-400 mt-0.5">e.g. 09:30 AM</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        Work End Time
+                      </label>
+                      <input
+                        type="time"
+                        value={formData.work_end_time}
+                        onChange={(e) =>
+                          setFormData({ ...formData, work_end_time: e.target.value })
+                        }
+                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        required={formData.timing_type === "fixed"}
+                      />
+                      <p className="text-[9px] text-slate-400 mt-0.5">e.g. 18:30 (06:30 PM)</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                        Late Grace (Minutes)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="180"
+                        value={formData.late_grace_period_minutes}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            late_grace_period_minutes: parseInt(e.target.value, 10) || 0,
+                          })
+                        }
+                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        required={formData.timing_type === "fixed"}
+                      />
+                      <p className="text-[9px] text-slate-400 mt-0.5">Late if checked in after Start + Grace</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
