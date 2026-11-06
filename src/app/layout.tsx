@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Blickwinkle Attendance Management System | Powered by ZTOI TECH",
+  title: "Blickwinkle Attendance Management System | Developed by ZTOI TECH",
   description:
-    "Mobile Selfie & GPS Attendance Management System for Blickwinkle Staff & Interns. Powered by ZTOI TECH.",
+    "Mobile Selfie & GPS Attendance Management System for Blickwinkle Staff & Interns. Developed by ZTOI TECH.",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",

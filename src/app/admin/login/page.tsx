@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Lock, User, ArrowRight, AlertCircle, ShieldCheck } from "lucide-react";
+import DevelopedByZtoi from "@/components/DevelopedByZtoi";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -143,11 +144,9 @@ export default function AdminLoginPage() {
         </div>
       </div>
 
-      {/* Powered by ZTOI TECH */}
+      {/* Developed by ZTOI TECH */}
       <div className="py-4 text-center space-y-1">
-        <p className="text-[11px] font-bold text-slate-400 tracking-widest uppercase">
-          Powered by ZTOI TECH
-        </p>
+        <DevelopedByZtoi />
         <p className="text-[10px] text-slate-400">
           Blickwinkle Attendance Management
         </p>

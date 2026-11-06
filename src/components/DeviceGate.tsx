@@ -5,6 +5,7 @@ import { Smartphone, Camera, MapPin, ShieldAlert, Laptop } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { isMobileOrTabletClient } from "@/lib/device";
+import DevelopedByZtoi from "@/components/DevelopedByZtoi";
 
 interface DeviceGateProps {
   children: ReactNode;
@@ -78,9 +79,7 @@ export default function DeviceGate({ children }: DeviceGateProps) {
           </div>
           
           <div className="mt-8 pt-4 border-t border-slate-100 text-center">
-            <span className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">
-              Powered by ZTOI TECH
-            </span>
+            <DevelopedByZtoi prefixClassName="text-[11px] font-semibold text-slate-400 tracking-wider uppercase" />
           </div>
         </div>
       </div>

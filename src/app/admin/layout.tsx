@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import AdminSidebar from "@/components/AdminSidebar";
+import DevelopedByZtoi from "@/components/DevelopedByZtoi";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -116,9 +117,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Admin Footer */}
         <footer className="bg-white border-t border-slate-200/80 px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
           <span>© {new Date().getFullYear()} Blickwinkle. All rights reserved.</span>
-          <span className="font-semibold text-slate-400 tracking-wider uppercase text-[11px]">
-            Powered by ZTOI TECH
-          </span>
+          <DevelopedByZtoi prefixClassName="font-semibold text-slate-400 tracking-wider uppercase text-[11px]" />
         </footer>
       </div>
     </div>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ShieldCheck, AlertCircle, Lock, Eye, EyeOff } from "lucide-react";
 import DeviceGate from "@/components/DeviceGate";
+import DevelopedByZtoi from "@/components/DevelopedByZtoi";
 
 export default function StaffLoginPage() {
   const router = useRouter();
@@ -181,9 +182,7 @@ export default function StaffLoginPage() {
 
         {/* Clean Footer */}
         <div className="pt-8 pb-2 text-center space-y-1">
-          <p className="text-[11px] font-bold text-slate-400 tracking-widest uppercase">
-            Powered by ZTOI TECH
-          </p>
+          <DevelopedByZtoi />
           <p className="text-[10px] text-slate-400">
             Blickwinkle Workplace System
           </p>

@@ -12,6 +12,7 @@ import {
   LogOut,
   X,
 } from "lucide-react";
+import DevelopedByZtoi from "@/components/DevelopedByZtoi";
 
 interface AdminSidebarProps {
   onCloseMobile?: () => void;
@@ -113,7 +114,7 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
         </nav>
       </div>
 
-      {/* Bottom Profile / Logout and Powered by ZTOI TECH */}
+      {/* Bottom Profile / Logout and Developed by ZTOI TECH */}
       <div className="pt-4 border-t border-slate-100 space-y-3">
         <button
           onClick={handleLogout}
@@ -124,9 +125,7 @@ export default function AdminSidebar({ onCloseMobile }: AdminSidebarProps) {
         </button>
 
         <div className="pt-2 text-center">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Powered by ZTOI TECH
-          </p>
+          <DevelopedByZtoi prefixClassName="text-[10px] font-bold text-slate-400 uppercase tracking-wider" />
         </div>
       </div>
     </aside>

@@ -1,4 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Michroma&display=swap");
 @import "tailwindcss";
+
+.font-michroma {
+  font-family: "Michroma", system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.04em;
+}
 
 @layer base {
   :root {

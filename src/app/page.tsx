@@ -19,6 +19,7 @@ import {
 import DeviceGate from "@/components/DeviceGate";
 import SelfieCamera, { SelfieCameraRef } from "@/components/SelfieCamera";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import DevelopedByZtoi from "@/components/DevelopedByZtoi";
 
 interface StaffInfo {
   id: number;
@@ -608,10 +609,8 @@ export default function StaffDashboardPage() {
         )}
 
         {/* Footer */}
-        <div className="pt-4 pb-2 text-center space-y-0.5">
-          <p className="text-[11px] font-bold text-slate-400 tracking-widest uppercase">
-            Powered by ZTOI TECH
-          </p>
+        <div className="pt-4 pb-2 text-center">
+          <DevelopedByZtoi />
         </div>
 
         {/* Bottom Nav */}

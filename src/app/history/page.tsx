@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import DeviceGate from "@/components/DeviceGate";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import DevelopedByZtoi from "@/components/DevelopedByZtoi";
 
 interface AttendanceItem {
   id: number;
@@ -346,9 +347,7 @@ export default function AttendanceHistoryPage() {
 
         {/* Footer */}
         <div className="py-4 text-center">
-          <p className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">
-            Powered by ZTOI TECH
-          </p>
+          <DevelopedByZtoi />
         </div>
 
         {/* Bottom Nav */}
