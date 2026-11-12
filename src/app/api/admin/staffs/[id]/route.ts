@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getAdminFromCookies } from "@/lib/auth";
 import { queryOne, execute } from "@/lib/db";
+import { parseLateGraceMinutes } from "@/lib/attendance";
 
 export async function GET(
   req: NextRequest,
@@ -57,7 +58,7 @@ export async function PUT(
     const timingType = body.timing_type === "any_time" ? "any_time" : "fixed";
     const workStartTime = timingType === "fixed" ? (body.work_start_time || "09:30") : null;
     const workEndTime = timingType === "fixed" ? (body.work_end_time || "18:30") : null;
-    const lateGrace = timingType === "fixed" ? (parseInt(body.late_grace_period_minutes, 10) || 30) : 0;
+    const lateGrace = timingType === "fixed" ? parseLateGraceMinutes(body.late_grace_period_minutes, 30) : 0;
 
     if (!name) {
       return NextResponse.json({ success: false, message: "Name is required." }, { status: 400 });

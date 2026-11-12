@@ -344,7 +344,7 @@ export default function AdminStaffPage() {
                             {(s.work_end_time || "18:30").substring(0, 5)}
                           </span>
                           <span className="text-[10px] text-slate-400">
-                            +{s.late_grace_period_minutes !== undefined ? s.late_grace_period_minutes : 30}m grace
+                            +{s.late_grace_period_minutes !== undefined && s.late_grace_period_minutes !== null ? s.late_grace_period_minutes : 30}m grace
                           </span>
                         </div>
                       )}

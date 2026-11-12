@@ -3,6 +3,7 @@ import { getStaffFromCookies } from "@/lib/auth";
 import { query, queryOne, execute } from "@/lib/db";
 import { uploadSelfieImage } from "@/lib/upload";
 import { reverseGeocode, calculateDistanceMeters } from "@/lib/geo";
+import { evaluateCheckInStatus, parseLateGraceMinutes } from "@/lib/attendance";
 
 export async function POST(req: NextRequest) {
   try {
@@ -96,13 +97,10 @@ export async function POST(req: NextRequest) {
     );
 
     const timingType = staffMember?.timing_type || "fixed";
-    const staffStart = staffMember?.work_start_time
-      ? String(staffMember.work_start_time).substring(0, 5)
-      : "09:30";
-    const graceMins =
-      staffMember?.late_grace_period_minutes !== undefined && staffMember?.late_grace_period_minutes !== null
-        ? Number(staffMember.late_grace_period_minutes)
-        : 30;
+    const workStartTime = staffMember?.work_start_time
+      ? String(staffMember.work_start_time)
+      : "09:30:00";
+    const graceMins = parseLateGraceMinutes(staffMember?.late_grace_period_minutes, 30);
 
     // Upload selfie image
     const uploadRes = await uploadSelfieImage(selfie, session.staffId, action);
@@ -127,20 +125,13 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Calculate if Late:
-      let status = "present";
-      if (timingType === "any_time") {
-        // Any Time: No late mark ever. Check in anytime!
-        status = "present";
-      } else {
-        // Fixed Timing: compare timeStr (HH:mm:ss) with staffStart + graceMins
-        const [startH, startM] = staffStart.split(":").map(Number);
-        const graceThresholdMinutes = (startH || 9) * 60 + (startM || 30) + graceMins;
-        const [currH, currM] = timeStr.split(":").map(Number);
-        const currMinutes = currH * 60 + currM;
-
-        status = currMinutes > graceThresholdMinutes ? "late" : "present";
-      }
+      // Calculate if Late (stored permanently in attendance record, independent of any future schedule changes)
+      const status = evaluateCheckInStatus({
+        timingType,
+        workStartTime,
+        gracePeriodMinutes: graceMins,
+        checkInTime: timeStr,
+      });
 
       await execute(
         `INSERT INTO blickwinkle_attendance_records 
